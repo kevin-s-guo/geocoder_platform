@@ -15,6 +15,6 @@ app.include_router(api.router)
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")
 
 
-@app.get("/")
-async def root():
-    return {"message": "Hello Bigger Applications!"}
+# @app.get("/")
+# async def root():
+#     return {"message": "welcome"}
