@@ -108,7 +108,7 @@ async def _upload_file_columns(request: Request, batchfile: UploadFile):
     if not delim:
         return templates.TemplateResponse("components/error_alert.html",
                                           context={"request": request, "msg": "Must provide delimiter"})
-    df = pd.read_csv(batchfile.file, delimiter=delim)
+    df = pd.read_csv(batchfile.file, delimiter=delim, dtype = 'str')
 
     context = {"request": request}
     context["df"] = df
@@ -175,7 +175,7 @@ async def _submit(request: Request, batchfile: UploadFile, bg: BackgroundTasks):
     pwd = form.get("pwd")
     job = lib.new_job()
 
-    df = pd.read_csv(batchfile.file, delimiter=delim)
+    df = pd.read_csv(batchfile.file, delimiter=delim, dtype = 'str')
     # address should not have * or " in it
     df[addr_col] = df[addr_col].astype(str).map(lambda s: s.replace('"', "")).map(lambda s: s.replace("*", ""))
     if split_components:
@@ -233,7 +233,7 @@ async def do_map_variables(request: Request, file: UploadFile):
     if not delim:
         return templates.TemplateResponse("components/error_alert.html",
                                           context={"request": request, "msg": "Must provide delimiter"})
-    df = pd.read_csv(file.file, delimiter=delim)
+    df = pd.read_csv(file.file, delimiter=delim, dtype = 'str')
 
     sdoh_vars = form.getlist("sdoh")
     if not sdoh_vars:

@@ -65,7 +65,7 @@ def _submit_job(data_csv: UploadFile, bg: BackgroundTasks,
     job = lib.new_job()
     #     os.mkdir(f"jobs/{job}")
 
-    df = pd.read_csv(data_csv.file, delimiter=delimiter)
+    df = pd.read_csv(data_csv.file, delimiter=delimiter, dtype = 'str')
 
     all_cols = [address_col, city_col, state_col, zip_col] if split_components else [address_col]
     if id_col:
@@ -219,7 +219,7 @@ def _download_failed(bg: BackgroundTasks, job_id: int, token: str = Query(defaul
 def _map_geocoded_to_geographic_variables(data_csv: UploadFile, delimiter: str = ",",
                                           tract_col: str = "tract",
                                           geographic_vars: GeographicVariables | None = Form(default=None)):
-    df = pd.read_csv(data_csv.file, delimiter=delimiter)
+    df = pd.read_csv(data_csv.file, delimiter=delimiter, dtype = 'str')
 
     if tract_col not in df:
         return {"error": f"Data file does not contain column: '{c}'"}
