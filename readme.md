@@ -1,4 +1,8 @@
 ## Geocoder Platform
+
+### Dependencies
+Docker needs to be installed on the host. See [this](https://docs.docker.com/get-docker/) page for Docker installation instructions.
+
 ### Docker setup
 In order to deploy the geocoder platform, download the `docker-compose.yml` file. In the directory containing that file, run the following command.
 
