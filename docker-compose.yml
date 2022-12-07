@@ -1,14 +1,14 @@
 version: "3.9"
 services:
   web: 
-    image: ksgi/geocoder-platform-web:arm64
+    image: ksgi/geocoder-platform-web:latest
     ports:
       - "7001:8000"
     depends_on:
       - "db"
     container_name: geocoder-platform-web
   db:
-    image: ksgi/geocoder-platform-db:arm64
+    image: ksgi/geocoder-platform-db:latest
     environment:
       - POSTGRES_USER=census
       - POSTGRES_PASSWORD=census
