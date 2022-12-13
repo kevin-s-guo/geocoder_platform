@@ -300,6 +300,7 @@ def update_sdoh(job, sdoh_vars):
 def generate_out(job, input_addr=True, long_lat=True, norm_addr=True, split_norm_addy=True):
     df = get_job(job, input_addr=input_addr, long_lat=long_lat, norm_addr=norm_addr, split_norm_addy=split_norm_addy)
     done, _, _, _, _, _, _ = get_status(job)
+
     if done:
         path = f"temp/{job}_out.csv"
         df.to_csv(path)
@@ -450,6 +451,33 @@ def reload_sdoh():
                                           sdoh_variables["level"]
 
             SDOH_VARS = sdoh_variables["description"].fillna("")
+
+def sweep_jobs():
+    # need to remove jobs that have been complete for more than 72 hours
+    # clean all jobs after 1 month (even if incomplete)
+
+    with psycopg2.connect(f"host={DBHOST} dbname={DBNAME} user={DBUSER} password={DBPASS}") as conn:
+        with conn.cursor() as cur:
+
+            cur.execute("SELECT id FROM jobs WHERE done = TRUE AND now() - endtime > interval '72 hours'")
+
+            to_delete = list(map(lambda s: s[0], cur.fetchall()))
+            completed_jobs = len(to_delete)
+
+            cur.execute("SELECT id FROM jobs WHERE now() - starttime > interval '1 month' OR starttime IS NULL")
+
+            old_ids = list(map(lambda s: s[0], cur.fetchall()))
+            to_delete += old_ids
+            old_jobs = len(old_ids)
+
+            for i in to_delete:
+                delete_job(i)
+
+            cur.execute("DELETE FROM tokens where expiration < now()")
+
+            token_count = cur.rowcount
+
+            print(f'auto: deleted {completed_jobs} completed jobs, {old_jobs} old jobs, and {token_count} expired tokens')
 
 
 def setup():
