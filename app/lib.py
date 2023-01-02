@@ -9,16 +9,16 @@ import secrets
 from joblib import Parallel, delayed
 from sqlalchemy import create_engine
 
-DBHOST = "localhost"
+DBHOST = "db"
 DBNAME = "census"
-DBUSER = "kevin"
-DBPASS = ""
+DBUSER = "census"
+DBPASS = "census"
 DBYEAR = "2020"  # will require column called "bg_<DBYEAR> in address table"
 
 OTHER_YEAR_BG = {"2010": {"table": "bg_19", "col": "bg_2010"}}  # column for blockgroup in master_address_table
 
-SDOH_TABLE = "sdoh.ahrq_2020_tract"
-SDOH_VARS = pd.read_csv("data/ahrq_2020_desc.csv").set_index("variable")['description']
+SDOH_TABLE = ""#"sdoh.ahrq_2020_tract"
+SDOH_VARS = ""#pd.read_csv("data/ahrq_2020_desc.csv").set_index("variable")['description']
 
 tablename = "master_address_table"
 
