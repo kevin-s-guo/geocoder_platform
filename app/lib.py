@@ -9,7 +9,7 @@ import secrets
 from joblib import Parallel, delayed
 from sqlalchemy import create_engine
 
-DBHOST = "localhost"
+DBHOST = "db"
 DBNAME = "census"
 DBUSER = "census"
 DBPASS = "census"
