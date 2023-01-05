@@ -3,16 +3,16 @@ import hashlib
 import numpy as np
 import os
 import pandas as pd
-import psycopg2  # TODO: convert to either all sqlalchemy or psycopg
+import psycopg2
 import re
 import secrets
 from joblib import Parallel, delayed
 from sqlalchemy import create_engine
 
-DBHOST = "db"
+DBHOST = "localhost" #db
 DBNAME = "census"
-DBUSER = "census"
-DBPASS = "census"
+DBUSER = "census" #census
+DBPASS = "census" # census
 DBYEAR = "2020"  # will require column called "bg_<DBYEAR> in address table"
 
 OTHER_YEAR_BG = {"2010": {"table": "bg_19", "col": "bg_2010"}}  # column for blockgroup in master_address_table
@@ -300,6 +300,9 @@ def update_sdoh(job, sdoh_vars):
 def generate_out(job, input_addr=True, long_lat=True, norm_addr=True, split_norm_addy=True):
     df = get_job(job, input_addr=input_addr, long_lat=long_lat, norm_addr=norm_addr, split_norm_addy=split_norm_addy)
     done, _, _, _, _, _, _ = get_status(job)
+
+    if not os.path.exists('temp'):
+        os.mkdir('temp')
 
     if done:
         path = f"temp/{job}_out.csv"
