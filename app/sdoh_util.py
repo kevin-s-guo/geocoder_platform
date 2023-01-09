@@ -10,7 +10,8 @@ from lib import DBNAME, DBUSER
 
 def load_sdoh_desc(desc_csv_fn, source, version, census_year, granularity, url, desc):  # version has to be a year
     # replace space with _
-    df = pd.read_csv(desc_csv_fn).rename(columns=lambda s: s.replace(" ", "_"))
+    df = pd.read_csv(desc_csv_fn)
+    df["variable"] = df["variable"].map(lambda s: s.replace(" ", "_"))
 
     if granularity not in ["zip", "county", "tract", "blockgroup"]:
         return False, "Granularity must be one of 'zip', 'county', 'tract', or 'blockgroup'"
@@ -151,33 +152,77 @@ def download_data(name=""):
             var_df.to_csv('data/fea_2020_desc.csv')
             data_df.to_csv('data/fea_2020.csv')
 
+
             print(load_sdoh_desc("data/fea_2020_desc.csv", source="fea", version="2020", desc="Food Environment Atlas",
                            census_year=2010, granularity="county", url="https://www.ers.usda.gov/data-products/food-environment-atlas/"))
             load_sdoh_data("data/fea_2020.csv", index_col="FIPS", source="fea", version="2020", granularity="county")
+        elif name == "cre":
+            URL = "https://www2.census.gov/programs-surveys/demo/datasets/community-resilience/2019/CRE_19_Tract.csv"
 
+            fn, _ = urllib.request.urlretrieve(URL, "tmp/data.csv")
+
+            data_df = pd.read_csv("tmp/data.csv").drop(columns=["STATE", "COUNTY", "TRACT"]).drop(columns=["NAME"]).\
+                set_index("GEO_ID").rename(index=lambda s: s.split("US")[1])
+
+            var_df = pd.DataFrame(index=data_df.columns)
+
+            # no offical descriptions in table form -- just leave blank
+            var_df.index = var_df.index.rename('variable')
+            var_df['description'] = ""
+
+            var_df.to_csv('data/cre_2019_desc.csv')
+            data_df.to_csv('data/cre_2019.csv')
+
+            print(load_sdoh_desc("data/cre_2019_desc.csv", source="cre", version="2019",
+                                 desc="Community Resilience Estimates",
+                           census_year=2010, granularity="tract", url="https://www.census.gov/programs-surveys/community-resilience-estimates.html"))
+            load_sdoh_data("data/cre_2019.csv", index_col="GEO_ID", source="cre", version="2019", granularity="tract")
+        elif name == "ruca":
+            URL = "https://www.ers.usda.gov/webdocs/DataFiles/53241/ruca2010revised.xlsx?v=7852.7"
+
+            fn, _ = urllib.request.urlretrieve(URL, "tmp/data.xlsx")
+
+            data_df = pd.read_excel("tmp/data.xlsx", skiprows=1)[["State-County-Tract FIPS Code (lookup by address at http://www.ffiec.gov/Geocode/)", "Primary RUCA Code 2010", "Secondary RUCA Code, 2010 (see errata)"]]
+            data_df = data_df.rename(columns={"State-County-Tract FIPS Code (lookup by address at http://www.ffiec.gov/Geocode/)": "FIPS", "Primary RUCA Code 2010": "Primary_RUCA_Code_2010", "Secondary RUCA Code, 2010 (see errata)":"Secondary_RUCA_Code_2010"}).dropna().set_index("FIPS")
+
+            var_df = pd.DataFrame(index=data_df.columns)
+            # no offical descriptions in table form -- just leave blank
+            var_df.index = var_df.index.rename('variable')
+            var_df['description'] = ""
+
+            var_df.to_csv('data/ruca_2019_desc.csv')
+            data_df.to_csv('data/ruca_2019.csv')
+
+            print(load_sdoh_desc("data/ruca_2019_desc.csv", source="ruca", version="2019", desc="Rural-Urban Commuting Area Codes",
+                           census_year=2010, granularity="tract", url="https://www.ers.usda.gov/data-products/rural-urban-commuting-area-codes.aspx"))
+            load_sdoh_data("data/ruca_2019.csv", index_col="FIPS", source="ruca", version="2019", granularity="tract")
+        elif name == "hl":
+            URL = "http://healthliteracymap.unc.edu/download/national_hl_scores.xlsx"
+
+            fn, _ = urllib.request.urlretrieve(URL, "tmp/data.xlsx")
+
+            data_df = pd.read_excel("tmp/data.xlsx").rename(columns={"Census block group ID": "ID"}).set_index("ID")
+
+            var_df = pd.DataFrame(index=data_df.columns)
+            var_df.index = var_df.index.rename('variable')
+            var_df['description'] = ""
+
+            var_df.to_csv('data/hl_2003_desc.csv')
+            data_df.to_csv('data/hl_2003.csv')
+
+            print(load_sdoh_desc("data/hl_2003_desc.csv", source="hl", version="2003", desc="National Health Literacy Map",
+                           census_year=2010, granularity="blockgroup", url="http://healthliteracymap.unc.edu/#understanding_the_data"))
+            load_sdoh_data("data/hl_2003.csv", index_col="ID", source="hl", version="2003", granularity="blockgroup")
         else:
             print(name, "is not a valid SDoH database that can be downloaded.")
     finally:
         shutil.rmtree("tmp")
 
 
-# download_data("ahrq")
-# download_data("places")
-# download_data("svi")
-# download_data('fea')
-
-# print(load_sdoh_desc("data/eji_2022_desc.csv", source="eji", version="2022", desc="CDC/ATSDR Environmental Justice Index",
-#                census_year=2010, granularity="tract", url="https://www.atsdr.cdc.gov/placeandhealth/eji/index.html/"))
-# load_sdoh_data("data/eji_2022.csv", index_col="geoid", source="eji", version="2022", granularity="tract") # many duplicate rows...
-
-# print(load_sdoh_desc("data/cre_2019_desc.csv", source="cre", version="2019", desc="Community Resilience Estimates",
-#                census_year=2010, granularity="tract", url="https://www.census.gov/programs-surveys/community-resilience-estimates.html"))
-# print(load_sdoh_data("data/cre_2019.csv", index_col="GEO_ID", source="cre", version="2019", granularity="tract"))
-
-# print(load_sdoh_desc("data/ruca_2019_desc.csv", source="ruca", version="2019", desc="Rural-Urban Commuting Area Codes",
-#                census_year=2010, granularity="tract", url="https://www.ers.usda.gov/data-products/rural-urban-commuting-area-codes.aspx"))
-# load_sdoh_data("data/ruca_2019.csv", index_col="FIPS", source="ruca", version="2019", granularity="tract")
-
-# print(load_sdoh_desc("data/hl_2003_desc.csv", source="hl", version="2003", desc="National Health Literacy Map",
-#                census_year=2010, granularity="blockgroup", url="http://healthliteracymap.unc.edu/#"))
-# load_sdoh_data("data/hl_2003.csv", index_col="ID", source="hl", version="2003", granularity="blockgroup")
+download_data("ahrq")
+download_data("places")
+download_data("svi")
+download_data('fea')
+download_data('cre')
+download_data('ruca')
+download_data('hl')
